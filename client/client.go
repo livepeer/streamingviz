@@ -76,14 +76,13 @@ func (self *Client) PostEvent(data map[string]interface{}) {
 	}
 }
 
-
 // Starts consuming events. NodeID must be set or else this will error.
 // Pass doneC <- true from the calling thread when you wish to stop the event loop.
 func (self *Client) ConsumeEvents(doneC chan bool) error {
 	if self.NodeID == "" {
 		return fmt.Errorf("NodeID must be set before consuming events")
 	}
-	
+
 	go self.consumeLoop(doneC)
 	return nil
 }
