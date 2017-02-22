@@ -3,6 +3,7 @@ package streamingviz
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 )
 
 const (
@@ -46,6 +47,7 @@ type Network struct {
 	Nodes     map[string]*Node
 	Links     []*Link
 	StreamIDs []string // All known streams
+	lock sync.Mutex
 }
 
 func NewNetwork() *Network {
@@ -107,6 +109,9 @@ func (self *Network) findNode(id string) (*Node, bool) {
 
 // Add this node to the network and add its peers as links
 func (self *Network) ReceivePeersForNode(nodeID string, peerIDs []string) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
 	if !self.hasNode(nodeID) {
 		self.addNode(nodeID)
 		fmt.Println("Adding node:", nodeID)
@@ -126,6 +131,9 @@ func (self *Network) ReceivePeersForNode(nodeID string, peerIDs []string) {
 }
 
 func (self *Network) StartBroadcasting(nodeID string, streamID string) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
 	node, ok := self.findNode(nodeID)
 	if ok {
 		node.Group[streamID] = NodeBroadcasting
@@ -133,6 +141,9 @@ func (self *Network) StartBroadcasting(nodeID string, streamID string) {
 }
 
 func (self *Network) StartConsuming(nodeID string, streamID string) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
 	node, ok := self.findNode(nodeID)
 	if ok {
 		node.Group[streamID] = NodeConsuming
@@ -140,6 +151,9 @@ func (self *Network) StartConsuming(nodeID string, streamID string) {
 }
 
 func (self *Network) StartRelaying(nodeID string, streamID string) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
 	node, ok := self.findNode(nodeID)
 	if ok {
 		node.Group[streamID] = NodeRelaying
@@ -147,6 +161,9 @@ func (self *Network) StartRelaying(nodeID string, streamID string) {
 }
 
 func (self *Network) DoneWithStream(nodeID string, streamID string) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
 	node, ok := self.findNode(nodeID)
 	if ok {
 		node.Group[streamID] = NodeIdle
@@ -154,6 +171,9 @@ func (self *Network) DoneWithStream(nodeID string, streamID string) {
 }
 
 func (self *Network) String() string {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
 	b, err := json.Marshal(self)
 	if err != nil {
 		return fmt.Sprintf("Error creating json from this network %v", err)
