@@ -47,7 +47,7 @@ type Network struct {
 	Nodes     map[string]*Node
 	Links     []*Link
 	StreamIDs []string // All known streams
-	lock sync.Mutex
+	lock      sync.Mutex
 }
 
 func NewNetwork() *Network {
