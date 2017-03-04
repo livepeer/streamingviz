@@ -100,6 +100,20 @@ func (self *Network) findNode(id string) (*Node, bool) {
 	return node, ok
 }
 
+// Reconstructs the links array removing links for this node
+func (self *Network) removeLinksForNode(nodeID string) {
+	node, ok := self.findNode(nodeID)
+	if ok {
+		links := make([]*Link, 0)
+		for _, link := range self.Links {
+			if link.Source != node && link.Target != node {
+				links = append(links, link)
+			}
+		}
+		self.Links = links
+	}
+}
+
 // Messages that may be received
 // 1. Node sends its peers - can construct the peer graph
 // 2. Node says it's publishing a stream
@@ -107,7 +121,7 @@ func (self *Network) findNode(id string) (*Node, bool) {
 // 4. Node says it's relaying a stream
 // 5. Finish publishing, requesting, relaying. TBD whether this is explicit or on a timeout
 
-// Add this node to the network and add its peers as links
+// Add this node to the network and add its peers as links. Remove existing links first to keep state consistent
 func (self *Network) ReceivePeersForNode(nodeID string, peerIDs []string) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
@@ -116,6 +130,8 @@ func (self *Network) ReceivePeersForNode(nodeID string, peerIDs []string) {
 		self.addNode(nodeID)
 		fmt.Println("Adding node:", nodeID)
 	}
+
+	self.removeLinksForNode(nodeID)
 
 	for _, p := range peerIDs {
 		if !self.hasNode(p) {
