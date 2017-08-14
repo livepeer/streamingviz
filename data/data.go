@@ -86,7 +86,6 @@ func (n *Network) ToD3Json() interface{} {
 			// glog.Infof("n: %v, strmID: %v", n.ID, sub.StrmID)
 			checkStrm(sub.StrmID, streams)
 			streams[sub.StrmID]["subscribers"] = append(streams[sub.StrmID]["subscribers"].([]map[string]string), map[string]string{"id": n.ID, "buffer": string(sub.BufferCount)})
-			glog.Infof(fmt.Sprintf("buffer: %v", sub.BufferCount))
 		}
 		for _, r := range n.Relays {
 			// glog.Infof("n: %v, strmID: %v", n.ID, r.StrmID)
