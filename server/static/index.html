@@ -72,7 +72,7 @@ var color = function(nodeID, strmID) {
     }
 
     // console.log(nodeID);
-    console.log(strmID);
+    // console.log(strmID);
     if (nodeID == stream.broadcaster) {
         return "green";
     } else if (stream.relayers.indexOf(nodeID) > -1) {
@@ -95,9 +95,9 @@ var text = function(nodeID, strmID) {
         return ""
     }
 
-    console.log(strmID)
-    console.log(nodeID)
-    console.log(strm.subscribers)
+    // console.log(strmID)
+    // console.log(nodeID)
+    // console.log(strm.subscribers)
     for (var i = 0; i < strm.subscribers.length; i++ ) {
         if (strm.subscribers[i].id == nodeID) {
             return strm.subscribers[i].buffer
