@@ -8,7 +8,7 @@
 <style>
 
 div #ids-container {
-    width:100px;
+    width:200px;
     float:left;
 }
 
@@ -219,7 +219,16 @@ $( document ).ready(function() {
 
     //Create stream IDs
     Object.keys(graph.streams).forEach(function(id) {
-        $("#ids-container").append("<p class='strmID'>" + id + "</p>")
+        var lengthText = 20;
+        var shortText = $.trim(id).substring(0, lengthText) + "...";
+        console.log(shortText);
+        $("#ids-container").append("<p class='strmID' strmid='" + id + "' shortstrmid='" + shortText + "'>" + shortText + "</p>")
+    });
+
+    $(".strmID").hover(function() {
+        $(this).text($(this).attr("strmid"));
+    }, function() {
+        $(this).text($(this).attr("shortstrmid"));
     });
 
     $(".strmID").click(function(strmID) {
