@@ -37,4 +37,18 @@ func TestToD3Json(t *testing.T) {
 	if _, sok := json["streams"]; !sok {
 		t.Errorf("Wrong json: %v", json)
 	}
+
+	//Delete "C", make sure the links are gone as well.
+	delete(n.Nodes, "C")
+	json = n.ToD3Json().(map[string]interface{})
+	links, ok := json["links"].([]interface{})
+	if !ok {
+		t.Errorf("Error converting links")
+	}
+	for _, l := range links {
+		link := l.(map[string]interface{})
+		if link["source"] == "C" || link["target"] == "C" {
+			t.Errorf("Not expecting links connected to C, but got %v", json)
+		}
+	}
 }
