@@ -8,38 +8,37 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/golang/glog"
 	"github.com/livepeer/streamingviz"
+	"github.com/livepeer/streamingviz/data"
 )
 
 var networkDB *streamingviz.Network
+var network *data.Network
 
 func init() {
 	networkDB = streamingviz.NewNetwork()
+	network = data.NewNetwork()
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	streamID := r.URL.Query().Get("streamid")
-
 	abs, _ := filepath.Abs("./server/static/index.html")
 	view, err := template.ParseFiles(abs)
 
-	//data := getData()
-	//network := getNetwork()
-	//data := networkToData(network, "teststream")
+	// data := getData()
 
-	data := networkToData(networkDB, streamID)
+	// network := getNetwork()
+	// data := networkToData(network, "teststream")
+
+	// streamID := r.URL.Query().Get("streamid")
+	// data := networkToData(networkDB, streamID)
+	data := network.ToD3Json()
 
 	if err != nil {
 		fmt.Fprintf(w, "error: %v", err)
 	} else {
 		view.Execute(w, data)
 	}
-}
-
-func handleJson(w http.ResponseWriter, r *http.Request) {
-	abs, _ := filepath.Abs("./server/static/data.json")
-	view, _ := ioutil.ReadFile(abs)
-	fmt.Fprintf(w, "%s", view)
 }
 
 func handleEvent(w http.ResponseWriter, r *http.Request) {
@@ -88,11 +87,29 @@ func handleEvent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleMetrics(w http.ResponseWriter, r *http.Request) {
+	rBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		glog.Errorf("Error reading r: %v", err)
+	}
+
+	node := &data.Node{}
+	err = json.Unmarshal(rBody, node)
+	if err != nil {
+		glog.Errorf("Error unmarshaling: %v", err)
+	}
+	glog.Infof("Got Node: %v", string(rBody))
+
+	network.SetNode(node)
+}
+
 func main() {
-	http.HandleFunc("/data.json", handleJson)
+	// http.HandleFunc("/data.json", handleJson)
 	http.HandleFunc("/event", handleEvent)
+	http.HandleFunc("/metrics", handleMetrics)
 	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8585", nil)
+	glog.Infof("Listening on 8081")
+	http.ListenAndServe(":8081", nil)
 }
 
 func getNetwork() *streamingviz.Network {
@@ -162,24 +179,15 @@ func networkToData(network *streamingviz.Network, streamID string) interface{} {
 	return genResult
 }
 
-func getData() map[string]interface{} {
-	return map[string]interface{}{
-		"nodes": []map[string]interface{}{
-			{
-				"id":    "A",
-				"group": 1,
-			},
-			{
-				"id":    "B",
-				"group": 2,
-			},
-		},
-		"links": []map[string]interface{}{
-			{
-				"source": "A",
-				"target": "B",
-				"value":  1,
-			},
-		},
+func getData() map[string]*json.RawMessage {
+	var objmap map[string]*json.RawMessage
+	abs, _ := filepath.Abs("./server/static/data.json")
+	f, err := ioutil.ReadFile(abs)
+	if err != nil {
+		glog.Errorf("Error reading file: %v", err)
 	}
+	if err := json.Unmarshal(f, &objmap); err != nil {
+		glog.Errorf("Error unmarshaling data: %v", err)
+	}
+	return objmap
 }
