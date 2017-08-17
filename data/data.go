@@ -159,6 +159,7 @@ func (n *Node) RemoveConn(local, remote string) {
 	for i, c := range n.Conns {
 		if c == rmc {
 			n.Conns = append(n.Conns[:i], n.Conns[i+1:]...)
+			return
 		}
 	}
 }

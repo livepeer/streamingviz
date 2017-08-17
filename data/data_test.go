@@ -17,6 +17,8 @@ func TestToD3Json(t *testing.T) {
 
 	n3 := NewNode("C")
 	n3.AddConn("C", "B")
+	n3.AddConn("C", "B")
+	n3.RemoveConn("C", "B")
 	n3.SetSub("strm1")
 	n3.SetStream("strm1", 10, 100)
 
